@@ -9,7 +9,7 @@
 - **Frontend**: React 18, TypeScript, Vite, React Router v6, Axios, Tailwind CSS, Lucide Icons, Vitest.
 - **Backend**: Node.js, Express, TypeScript, Prisma ORM, JWT Authentication, bcryptjs, Zod, Jest, Supertest.
 - **Database**: PostgreSQL.
-- **DevOps**: Docker, Docker Compose, Jenkinsfile Pipeline.
+- **DevOps**: Docker, Docker Compose, Kubernetes, Jenkinsfile Pipeline.
 
 ---
 
@@ -50,6 +50,16 @@ devtrack/
 │   ├── tsconfig.json
 │   ├── jest.config.js
 │   └── Dockerfile
+│
+├── k8s/                      # Kubernetes manifests (Deployments, Services, ConfigMap, Secrets, Ingress)
+│   ├── 01-secrets.yaml
+│   ├── 02-configmap.yaml
+│   ├── 03-postgres.yaml
+│   ├── 04-backend.yaml
+│   ├── 05-frontend.yaml
+│   ├── 06-ingress.yaml
+│   ├── kustomization.yaml
+│   └── README.md
 │
 ├── docker-compose.yml        # Orchestration for PostgreSQL, Backend, and Frontend containers
 ├── Jenkinsfile               # Declarative Jenkins CI/CD pipeline
@@ -122,7 +132,43 @@ docker compose down -v
 
 ---
 
-## 6. Automated Testing
+## 6. Kubernetes Deployment
+
+Production-ready Kubernetes manifests are provided under the `k8s/` directory.
+
+### Prerequisites
+- Enable Kubernetes in **Docker Desktop** (Settings $\to$ Kubernetes $\to$ Enable Kubernetes) or start **Minikube**.
+
+### Deploying to Kubernetes
+```bash
+# 1. Build images locally
+docker build -t devtrack-backend:latest ./backend
+docker build -t devtrack-frontend:latest ./frontend
+
+# 2. Apply all Kubernetes manifests
+kubectl apply -f k8s/
+
+# 3. Verify status
+kubectl get pods
+kubectl get svc
+```
+
+Access the application:
+- **Frontend UI (NodePort)**: `http://localhost:30080`
+- **Or via Port Forward**:
+  ```bash
+  kubectl port-forward svc/frontend 3000:80
+  ```
+  Then visit `http://localhost:3000`.
+
+To teardown the cluster deployment:
+```bash
+kubectl delete -f k8s/
+```
+
+---
+
+## 7. Automated Testing
 
 ### Backend Unit & Integration Tests
 Runs automated API tests covering `/api/health`, registration, login, and issue creation:
@@ -140,7 +186,7 @@ npm test
 
 ---
 
-## 7. Jenkins CI/CD Pipeline
+## 8. Jenkins CI/CD Pipeline
 
 The repository includes a declarative `Jenkinsfile` that defines a strict CI pipeline with 7 sequential stages:
 
